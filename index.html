@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050505">
+
+  <title>GODDEN TECH GLOBAL — 4D Store</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+</head>
+
+<body>
+
+  <!-- 4D BACKGROUND -->
+  <canvas id="world"></canvas>
+
+  <!-- LOADING -->
+  <div id="loader">
+    <div class="loader-logo">
+      GODDEN<span>TECH</span>
+    </div>
+
+    <div class="loader-line">
+      <span></span>
+    </div>
+
+    <p>INITIALIZING 4D TECHNOLOGY...</p>
+  </div>
+
+  <!-- NAVIGATION -->
+  <header class="navbar">
+
+    <a href="#home" class="brand">
+      GODDEN
+      <span>TECH</span>
+    </a>
+
+    <nav>
+      <a href="#home">HOME</a>
+      <a href="#store">STORE</a>
+      <a href="#categories">CATEGORIES</a>
+      <a href="#about">ABOUT</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button id="cartButton" class="icon-button">
+        🛒 <span id="cartCount">0</span>
+      </button>
+
+      <button id="menuButton" class="menu-button">
+        MENU
+      </button>
+    </div>
+
+  </header>
+
+
+  <!-- MOBILE MENU -->
+  <aside id="mobileMenu" class="mobile-menu">
+
+    <button id="closeMenu" class="close-button">
+      ×
+    </button>
+
+    <p class="mini-label">GODDEN TECH GLOBAL</p>
+
+    <a href="#home">HOME</a>
+    <a href="#store">STORE</a>
+    <a href="#categories">CATEGORIES</a>
+    <a href="#about">ABOUT</a>
+
+  </aside>
+
+
+  <!-- HERO -->
+  <main>
+
+    <section id="home" class="hero">
+
+      <div class="hero-content">
+
+        <p class="eyebrow">
+          NEXT GENERATION TECHNOLOGY
+        </p>
+
+        <h1>
+          ENTER THE
+          <span>4D STORE.</span>
+        </h1>
+
+        <p class="hero-description">
+          Welcome to GODDEN TECH GLOBAL — a futuristic digital
+          showroom where technology meets immersive experience.
+        </p>
+
+        <div class="hero-buttons">
+
+          <button id="enterStore" class="primary-button">
+            ENTER STORE
+            <span>→</span>
+          </button>
+
+          <button id="experienceButton" class="outline-button">
+            EXPERIENCE 4D
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="hero-status">
+
+        <div>
+          <span class="status-dot"></span>
+          SYSTEM ONLINE
+        </div>
+
+        <div>
+          4D EXPERIENCE
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- STORE -->
+    <section id="store" class="store-section">
+
+      <div class="section-heading">
+
+        <div>
+          <p class="mini-label">
+            01 — FEATURED
+          </p>
+
+          <h2>
+            EXPLORE
+            <span>TECH.</span>
+          </h2>
+        </div>
+
+        <p>
+          Discover selected gadgets from
+          the GODDEN TECH universe.
+        </p>
+
+      </div>
+
+
+      <div id="products" class="product-grid"></div>
+
+    </section>
+
+
+    <!-- CATEGORIES -->
+    <section id="categories" class="categories-section">
+
+      <p class="mini-label">
+        02 — CATEGORIES
+      </p>
+
+      <h2>
+        FIND YOUR
+        <span>WORLD.</span>
+      </h2>
+
+      <div class="category-grid">
+
+        <button class="category-card" data-category="Smartphones">
+          <strong>01</strong>
+          <span>SMARTPHONES</span>
+          <small>Mobile technology</small>
+        </button>
+
+        <button class="category-card" data-category="Laptops">
+          <strong>02</strong>
+          <span>LAPTOPS</span>
+          <small>Power & productivity</small>
+        </button>
+
+        <button class="category-card" data-category="Gaming">
+          <strong>03</strong>
+          <span>GAMING</span>
+          <small>Next-level performance</small>
+        </button>
+
+        <button class="category-card" data-category="Audio">
+          <strong>04</strong>
+          <span>AUDIO</span>
+          <small>Immersive sound</small>
+        </button>
+
+        <button class="category-card" data-category="Wearables">
+          <strong>05</strong>
+          <span>WEARABLES</span>
+          <small>Smart lifestyle</small>
+        </button>
+
+        <button class="category-card" data-category="Accessories">
+          <strong>06</strong>
+          <span>ACCESSORIES</span>
+          <small>Complete your setup</small>
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- ABOUT -->
+    <section id="about" class="about-section">
+
+      <div class="about-card">
+
+        <p class="mini-label">
+          03 — GODDEN TECH
+        </p>
+
+        <h2>
+          TECHNOLOGY
+          <span>WITHOUT LIMITS.</span>
+        </h2>
+
+        <p>
+          GODDEN TECH GLOBAL is designed around one idea:
+          technology should feel exciting, accessible and
+          futuristic.
+        </p>
+
+        <button id="aboutButton" class="outline-button">
+          DISCOVER MORE
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- CART PANEL -->
+  <aside id="cartPanel" class="cart-panel">
+
+    <div class="cart-header">
+
+      <div>
+        <p class="mini-label">YOUR CART</p>
+        <h3>GODDEN BAG</h3>
+      </div>
+
+      <button id="closeCart" class="close-button">
+        ×
+      </button>
+
+    </div>
+
+    <div id="cartItems" class="cart-items">
+      <p class="empty-cart">
+        Your cart is empty.
+      </p>
+    </div>
+
+    <div class="cart-footer">
+
+      <div class="total-row">
+        <span>TOTAL</span>
+        <strong id="cartTotal">₦0</strong>
+      </div>
+
+      <button id="checkoutButton" class="checkout-button">
+        CHECKOUT
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <!-- PRODUCT MODAL -->
+  <div id="productModal" class="modal">
+
+    <div class="modal-card">
+
+      <button id="closeProduct" class="close-button">
+        ×
+      </button>
+
+      <div id="modalVisual" class="modal-visual">
+        <div class="visual-device"></div>
+      </div>
+
+      <div class="modal-info">
+
+        <p id="modalCategory" class="mini-label"></p>
+
+        <h2 id="modalName"></h2>
+
+        <p id="modalDescription"></p>
+
+        <strong id="modalPrice"></strong>
+
+        <button id="modalAdd" class="primary-button">
+          ADD TO CART
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- EXPERIENCE PANEL -->
+  <div id="experiencePanel" class="experience-panel">
+
+    <button id="closeExperience" class="close-button">
+      ×
+    </button>
+
+    <p class="mini-label">
+      GODDEN TECH 4D
+    </p>
+
+    <h2>
+      EXPERIENCE
+      <span>THE FUTURE.</span>
+    </h2>
+
+    <p>
+      Move your mouse or drag across the screen.
+      The environment reacts to your movement.
+    </p>
+
+    <div class="experience-status">
+
+      <div>
+        <span></span>
+        SPACE
+      </div>
+
+      <div>
+        <span></span>
+        TIME
+      </div>
+
+      <div>
+        <span></span>
+        MOTION
+      </div>
+
+      <div>
+        <span></span>
+        INTERACTION
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- NOTIFICATION -->
+  <div id="notification" class="notification">
+    Added to your GODDEN bag.
+  </div>
+
+
+  <script src="script.js"></script>
+
+</body>
+  </html>
