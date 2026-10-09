@@ -1,211 +1,484 @@
 (() => {
-  const scene = document.getElementById('sceneWrap');
-  const orb = document.getElementById('coreOrb');
-  const state = document.getElementById('interactionState');
-  const toggle = document.getElementById('motionToggle');
-  const hint = document.getElementById('interactHint');
-  const year = document.getElementById('year');
+  "use strict";
 
-  if (!scene || !orb) return;
+  const $ = (selector, root = document) =>
+    root.querySelector(selector);
 
-  if (year) {
-    year.textContent = new Date().getFullYear();
-  }
+  const $$ = (selector, root = document) =>
+    [...root.querySelectorAll(selector)];
 
-  let targetX = 0;
-  let targetY = 0;
-  let currentX = 0;
-  let currentY = 0;
-  let dragging = false;
-  let startX = 0;
-  let startY = 0;
-  let baseX = 0;
-  let baseY = 0;
-  let pointerActive = false;
+  const loader = $("#loader");
+  const motionToggle = $("#motionToggle");
 
-  let paused = window.matchMedia(
-    '(prefers-reduced-motion: reduce)'
-  ).matches;
+  let motionEnabled =
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function updateState(message) {
-    if (state) state.textContent = message;
-  }
+  // CINEMATIC INTRO
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      loader?.classList.add("done");
+    }, 1500);
 
-  function setTargetFromPoint(clientX, clientY) {
-    const rect = scene.getBoundingClientRect();
-
-    const x = (clientX - rect.left) / rect.width;
-    const y = (clientY - rect.top) / rect.height;
-
-    targetY = (x - 0.5) * 48;
-    targetX = (0.5 - y) * 34;
-
-    pointerActive = true;
-    updateState('SIGNAL DETECTED');
-  }
-
-  // Desktop mouse movement
-  scene.addEventListener('pointermove', (event) => {
-    if (event.pointerType === 'mouse') {
-      setTargetFromPoint(event.clientX, event.clientY);
-      return;
-    }
-
-    // Mobile touch-and-drag
-    if (dragging) {
-      targetY = baseY + (event.clientX - startX) * 0.65;
-      targetX = baseX - (event.clientY - startY) * 0.55;
-
-      targetX = Math.max(-50, Math.min(50, targetX));
-      targetY = Math.max(-65, Math.min(65, targetY));
-
-      pointerActive = true;
-      updateState('OBJECT ROTATING');
-    }
+    setTimeout(() => {
+      loader?.remove();
+    }, 2600);
   });
 
-  scene.addEventListener('pointerdown', (event) => {
-    dragging = true;
+  // MOTION CONTROL
+  function setMotion(enabled) {
+    motionEnabled = enabled;
 
-    startX = event.clientX;
-    startY = event.clientY;
-
-    baseX = targetX;
-    baseY = targetY;
-
-    pointerActive = true;
-    updateState('OBJECT ROTATING');
-
-    if (scene.setPointerCapture) {
-      try {
-        scene.setPointerCapture(event.pointerId);
-      } catch (_) {}
-    }
-  });
-
-  function releasePointer() {
-    dragging = false;
-
-    updateState(
-      pointerActive ? 'SIGNAL DETECTED' : 'AWAITING INPUT'
+    document.body.classList.toggle(
+      "motion-off",
+      !enabled
     );
-  }
 
-  scene.addEventListener('pointerup', releasePointer);
-  scene.addEventListener('pointercancel', releasePointer);
-
-  scene.addEventListener('pointerleave', (event) => {
-    if (event.pointerType === 'mouse' && !dragging) {
-      targetX *= 0.25;
-      targetY *= 0.25;
-
-      pointerActive = false;
-      updateState('AWAITING INPUT');
-    }
-  });
-
-  // Keyboard interaction
-  scene.addEventListener('keydown', (event) => {
-    const step = 8;
-
-    if (event.key === 'ArrowLeft') {
-      targetY -= step;
-    } else if (event.key === 'ArrowRight') {
-      targetY += step;
-    } else if (event.key === 'ArrowUp') {
-      targetX += step;
-    } else if (event.key === 'ArrowDown') {
-      targetX -= step;
-    } else {
-      return;
-    }
-
-    event.preventDefault();
-
-    targetX = Math.max(-40, Math.min(40, targetX));
-    targetY = Math.max(-55, Math.min(55, targetY));
-
-    pointerActive = true;
-    updateState('KEYBOARD CONTROL');
-  });
-
-  // Smooth animation loop
-  function animate() {
-    if (!paused) {
-      currentX += (targetX - currentX) * 0.075;
-      currentY += (targetY - currentY) * 0.075;
-
-      const time = performance.now() * 0.00045;
-      const idle = pointerActive ? 0 : Math.sin(time) * 3;
-
-      orb.style.transform = `
-        rotateX(${currentX + idle}deg)
-        rotateY(${currentY + Math.cos(time) * 3}deg)
-        translateY(${Math.sin(time * 1.4) * 5}px)
+    if (motionToggle) {
+      motionToggle.innerHTML = `
+        <span class="status-dot"
+        style="background:${enabled ? "#55d99a" : "#777"}"></span>
+        ${enabled ? "MOTION ON" : "MOTION OFF"}
       `;
 
-      scene.style.setProperty(
-        '--pointer-glow-x',
-        `${50 + currentY * 0.5}%`
+      motionToggle.setAttribute(
+        "aria-pressed",
+        String(!enabled)
       );
     }
 
-    requestAnimationFrame(animate);
-  }
-
-  animate();
-
-  // Pause and resume motion
-  function toggleMotion() {
-    paused = !paused;
-
-    document.body.classList.toggle('paused', paused);
-
-    if (toggle) {
-      toggle.textContent = paused
-        ? 'RESUME MOTION'
-        : 'PAUSE MOTION';
-
-      toggle.setAttribute('aria-pressed', String(paused));
+    if (window.goddenScene) {
+      window.goddenScene.setMotion(enabled);
     }
-
-    updateState(paused ? 'MOTION PAUSED' : 'MOTION ACTIVE');
   }
 
-  if (toggle) {
-    toggle.addEventListener('click', toggleMotion);
-  }
+  motionToggle?.addEventListener("click", () => {
+    setMotion(!motionEnabled);
+  });
 
-  // Interaction hint button
-  if (hint) {
-    hint.addEventListener('click', () => {
-      targetX = -14;
-      targetY = 24;
+  // SMOOTH CINEMATIC NAVIGATION
+  $$('a[href^="#"]').forEach(link => {
+    link.addEventListener("click", event => {
+      const target = $(link.getAttribute("href"));
 
-      pointerActive = true;
+      if (!target) return;
 
-      updateState('INTERACTION READY');
+      event.preventDefault();
 
-      scene.focus({ preventScroll: true });
+      target.scrollIntoView({
+        behavior: motionEnabled ? "smooth" : "auto",
+        block: "start"
+      });
+    });
+  });
 
-      if (
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
-        paused
-      ) {
-        paused = false;
-        document.body.classList.remove('paused');
+  // SCROLL REVEALS
+  const revealElements = $$(`
+    .vision-content,
+    .energy-core,
+    .section-heading,
+    .product-card,
+    .collection-footer,
+    .finale .eyebrow,
+    .finale h2,
+    .finale-brand,
+    .crown,
+    .jesus,
+    .finale-button
+  `);
 
-        if (toggle) {
-          toggle.textContent = 'PAUSE MOTION';
-          toggle.setAttribute('aria-pressed', 'false');
-        }
+  revealElements.forEach(element => {
+    element.classList.add("reveal");
+  });
+
+  if ("IntersectionObserver" in window) {
+    const revealObserver = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.12
       }
+    );
 
-      orb.style.filter = 'brightness(1.25)';
-
-      window.setTimeout(() => {
-        orb.style.filter = '';
-      }, 500);
+    revealElements.forEach(element => {
+      revealObserver.observe(element);
+    });
+  } else {
+    revealElements.forEach(element => {
+      element.classList.add("visible");
     });
   }
+
+  // HERO PHONE PARALLAX
+  const stage = $("#productStage");
+  const phone = $("#phone");
+
+  if (
+    stage &&
+    phone &&
+    window.matchMedia("(pointer: fine)").matches
+  ) {
+    let targetX = 0;
+    let targetY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    stage.addEventListener("pointermove", event => {
+      const rect = stage.getBoundingClientRect();
+
+      targetX =
+        ((event.clientX - rect.left) / rect.width - 0.5) * 14;
+
+      targetY =
+        ((event.clientY - rect.top) / rect.height - 0.5) * -12;
+    });
+
+    stage.addEventListener("pointerleave", () => {
+      targetX = 0;
+      targetY = 0;
+    });
+
+    function movePhone() {
+      currentX += (targetX - currentX) * 0.055;
+      currentY += (targetY - currentY) * 0.055;
+
+      if (motionEnabled) {
+        phone.style.marginLeft = `${currentX}px`;
+        phone.style.marginTop = `${currentY}px`;
+      }
+
+      requestAnimationFrame(movePhone);
+    }
+
+    requestAnimationFrame(movePhone);
+  }
+
+  // ACTIVE NAVIGATION
+  const navigationLinks = $$("nav a");
+
+  const navigationSections = [
+    $("#home"),
+    $("#vision"),
+    $("#products")
+  ].filter(Boolean);
+
+  if ("IntersectionObserver" in window) {
+    const navigationObserver = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+
+          navigationLinks.forEach(link => {
+            link.classList.toggle(
+              "active",
+              link.getAttribute("href") ===
+                `#${entry.target.id}`
+            );
+          });
+        });
+      },
+      {
+        rootMargin: "-35% 0px -55% 0px"
+      }
+    );
+
+    navigationSections.forEach(section => {
+      navigationObserver.observe(section);
+    });
+  }
+
+  // THREE.JS 3D PARTICLE WORLD
+  // If Three.js cannot load, the CSS animations still work.
+  function startThreeWorld() {
+    if (!window.THREE) {
+      console.warn(
+        "Three.js did not load. CSS animation remains active."
+      );
+      return;
+    }
+
+    const canvas = $("#world");
+
+    if (!canvas) return;
+
+    let renderer;
+    let scene;
+    let camera;
+    let particles;
+    let streaks;
+    let clock;
+
+    try {
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: "low-power"
+      });
+
+      renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio || 1, 1.5)
+      );
+
+      renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+      );
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(
+        58,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+
+      camera.position.z = 18;
+
+      clock = new THREE.Clock();
+
+      // Floating particles
+      const particleCount =
+        window.innerWidth < 700 ? 450 : 1000;
+
+      const positions = new Float32Array(
+        particleCount * 3
+      );
+
+      for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] =
+          (Math.random() - 0.5) * 34;
+
+        positions[i * 3 + 1] =
+          (Math.random() - 0.5) * 22;
+
+        positions[i * 3 + 2] =
+          (Math.random() - 0.5) * 26;
+      }
+
+      const particleGeometry =
+        new THREE.BufferGeometry();
+
+      particleGeometry.setAttribute(
+        "position",
+        new THREE.BufferAttribute(positions, 3)
+      );
+
+      const particleMaterial =
+        new THREE.PointsMaterial({
+          color: 0xff4a52,
+          size: 0.045,
+          transparent: true,
+          opacity: 0.72,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+
+      particles = new THREE.Points(
+        particleGeometry,
+        particleMaterial
+      );
+
+      scene.add(particles);
+
+      // Cinematic red light streaks
+      const linePositions = [];
+
+      for (let i = 0; i < 65; i++) {
+        const x = (Math.random() - 0.5) * 35;
+        const y = (Math.random() - 0.5) * 23;
+        const z = (Math.random() - 0.5) * 25;
+
+        linePositions.push(
+          x, y, z,
+          x + (Math.random() - 0.5) * 1.5,
+          y + (Math.random() - 0.5) * 1.5,
+          z - Math.random() * 2.5
+        );
+      }
+
+      const streakGeometry =
+        new THREE.BufferGeometry();
+
+      streakGeometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(
+          linePositions,
+          3
+        )
+      );
+
+      const streakMaterial =
+        new THREE.LineBasicMaterial({
+          color: 0xff2736,
+          transparent: true,
+          opacity: 0.19
+        });
+
+      streaks = new THREE.LineSegments(
+        streakGeometry,
+        streakMaterial
+      );
+
+      scene.add(streaks);
+
+      // Pointer-controlled camera
+      let targetX = 0;
+      let targetY = 0;
+      let cameraX = 0;
+      let cameraY = 0;
+
+      window.addEventListener(
+        "pointermove",
+        event => {
+          if (event.pointerType === "touch") return;
+
+          targetX =
+            (event.clientX / window.innerWidth - 0.5) * 0.65;
+
+          targetY =
+            (event.clientY / window.innerHeight - 0.5) * -0.35;
+        },
+        { passive: true }
+      );
+
+      let running = false;
+
+      function animate() {
+        if (!running) return;
+
+        requestAnimationFrame(animate);
+
+        const time = clock.getElapsedTime();
+
+        if (motionEnabled) {
+          cameraX += (targetX - cameraX) * 0.015;
+          cameraY += (targetY - cameraY) * 0.015;
+
+          camera.position.x =
+            cameraX + Math.sin(time * 0.16) * 0.18;
+
+          camera.position.y =
+            cameraY + Math.cos(time * 0.13) * 0.12;
+
+          camera.lookAt(0, 0, 0);
+
+          particles.rotation.y = time * 0.012;
+
+          particles.rotation.x =
+            Math.sin(time * 0.09) * 0.025;
+
+          streaks.rotation.y = -time * 0.008;
+
+          const particlePositions =
+            particleGeometry.attributes.position;
+
+          for (
+            let i = 2;
+            i < particlePositions.array.length;
+            i += 3
+          ) {
+            particlePositions.array[i] += 0.018;
+
+            if (particlePositions.array[i] > 13) {
+              particlePositions.array[i] = -13;
+            }
+          }
+
+          particlePositions.needsUpdate = true;
+        }
+
+        renderer.render(scene, camera);
+      }
+
+      function startAnimation() {
+        if (running) return;
+
+        running = true;
+        clock.start();
+        animate();
+      }
+
+      function stopAnimation() {
+        running = false;
+      }
+
+      function resize() {
+        camera.aspect =
+          window.innerWidth / window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setPixelRatio(
+          Math.min(window.devicePixelRatio || 1, 1.5)
+        );
+
+        renderer.setSize(
+          window.innerWidth,
+          window.innerHeight
+        );
+      }
+
+      window.addEventListener(
+        "resize",
+        resize,
+        { passive: true }
+      );
+
+      document.addEventListener(
+        "visibilitychange",
+        () => {
+          if (document.hidden) {
+            stopAnimation();
+          } else {
+            startAnimation();
+          }
+        }
+      );
+
+      window.goddenScene = {
+        setMotion(enabled) {
+          particleMaterial.opacity =
+            enabled ? 0.72 : 0.25;
+
+          streakMaterial.opacity =
+            enabled ? 0.19 : 0.05;
+        }
+      };
+
+      startAnimation();
+
+    } catch (error) {
+      console.warn(
+        "3D environment unavailable. CSS animations remain active.",
+        error
+      );
+    }
+  }
+
+  startThreeWorld();
+
+  // SMALL PRODUCT INTERACTION
+  $$(".product-card").forEach(card => {
+    card.addEventListener("click", () => {
+      card.animate(
+        [
+          { transform: "scale(1)" },
+          { transform: "scale(0.98)" },
+          { transform: "scale(1)" }
+        ],
+        {
+          duration: 350,
+          easing: "ease-out"
+        }
+      );
+    });
+  });
+
 })();
